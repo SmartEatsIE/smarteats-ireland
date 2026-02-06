@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartEats Ireland - Stop Wasting Food & Money</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .slide-in { animation: slideIn 0.3s ease-out; }
+        .chat-bubble { max-width: 80%; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Logo styling */
+        .logo-leaf {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #2C7A5C 0%, #84B59F 100%);
+            border-radius: 50% 50% 50% 0%;
+            transform: rotate(-45deg);
+            display: inline-block;
+            position: relative;
+        }
+        .logo-leaf::after {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 30px;
+            background: #CADCFC;
+            top: 5px;
+            left: 19px;
+            transform: rotate(45deg);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="app"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function App() {
+            const [activeTab, setActiveTab] = useState('home');
+            const [chatMessages, setChatMessages] = useState([
+                { role: 'assistant', content: 'Hi! 👋 I\'m your AI meal assistant. Ask me "What can I make with chicken?" or "Give me a €20 weekly plan"' }
+            ]);
+            const [userInput, setUserInput] = useState('');
+            const [isTyping, setIsTyping] = useState(false);
+            const [shoppingList, setShoppingList] = useState('');
+            const [priceResults, setPriceResults] = useState(null);
+
+            const handleSendMessage = async () => {
+                if (!userInput.trim()) return;
+                const newMessages = [...chatMessages, { role: 'user', content: userInput }];
+                setChatMessages(newMessages);
+                setUserInput('');
+                setIsTyping(true);
+
+                setTimeout(() => {
+                    const response = getAIResponse(userInput);
+                    setChatMessages([...newMessages, { role: 'assistant', content: response }]);
+                    setIsTyping(false);
+                }, 1500);
+            };
+
+            const getAIResponse = (input) => {
+                const lower = input.toLowerCase();
+                
+                if (lower.includes('family') || lower.includes('kids')) {
+                    return `Perfect for families! Here's a budget-friendly meal:\n\n🍝 **Family Pasta Bake** (Serves 4, €8.50)\n- 400g pasta (€0.80 at Aldi)\n- 500g mince (€3.50 at Lidl)\n- Jar pasta sauce (€1.20)\n- Cheese (€2.50)\n- Veg (€0.50)\n\n✅ 30 mins prep | Kids love it!\n📊 Feeds family of 4\n💰 €2.12 per person\n\nWant a full weekly family meal plan?`;
+                }
+                
+                if (lower.includes('quick') || lower.includes('busy')) {
+                    return `Great! Here are 3 quick meals under 20 minutes:\n\n1. **Stir-Fry Noodles** - 12 mins, €4.20\n2. **Egg Fried Rice** - 15 mins, €3.80  \n3. **Quesadillas** - 10 mins, €3.50\n\nAll use basic ingredients you probably have! Which one sounds good?`;
+                }
+
+                return `I can help you with:\n\n🍳 Recipe suggestions\n💰 Budget meal plans\n👨‍👩‍👧 Family-sized portions\n⏱️ Quick weeknight dinners\n🌱 Vegetarian options\n\nWhat would you like to cook?`;
+            };
+
+            const compareShoppingList = () => {
+                const items = shoppingList.split('\n').filter(item => item.trim());
+                if (items.length === 0) return;
+
+                const results = {
+                    aldi: { total: 23.45, savings: 4.15 },
+                    tesco: { total: 26.20, savings: 1.40 },
+                    lidl: { total: 27.60, savings: 0 }
+                };
+                setPriceResults(results);
+            };
+
+            return (
+                <div className="min-h-screen">
+                    {/* Header */}
+                    <header className="bg-white shadow-md border-b-2 border-emerald-100">
+                        <div className="max-w-7xl mx-auto px-4 py-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                    {/* SmartEats Horizontal Logo */}
+                                    <svg width="280" height="60" viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M 100 40 Q 140 50, 150 85" stroke="#84B59F" strokeWidth="8" fill="none" strokeLinecap="round"/>
+                                        <polygon points="153,82 146,93 139,86" fill="#84B59F"/>
+                                        <path d="M 150 100 Q 145 140, 115 165" stroke="#84B59F" strokeWidth="8" fill="none" strokeLinecap="round"/>
+                                        <polygon points="118,168 108,165 111,157" fill="#84B59F"/>
+                                        <path d="M 95 165 Q 50 150, 50 100" stroke="#84B59F" strokeWidth="8" fill="none" strokeLinecap="round"/>
+                                        <polygon points="47,97 52,92 57,100" fill="#84B59F"/>
+                                        <path d="M 50 85 Q 55 50, 85 40" stroke="#84B59F" strokeWidth="6" fill="none" strokeDasharray="4,8" opacity="0.6"/>
+                                        <path d="M 100 60 Q 135 75, 135 110 Q 135 140, 110 157 L 100 165 L 90 157 Q 65 140, 65 110 Q 65 75, 100 60 Z" fill="#2C7A5C"/>
+                                        <line x1="100" y1="62" x2="100" y2="163" stroke="#84B59F" strokeWidth="3" strokeLinecap="round"/>
+                                        <line x1="100" y1="85" x2="80" y2="100" stroke="#84B59F" strokeWidth="2.5" strokeLinecap="round"/>
+                                        <line x1="100" y1="85" x2="120" y2="100" stroke="#84B59F" strokeWidth="2.5" strokeLinecap="round"/>
+                                        <line x1="100" y1="120" x2="85" y2="132" stroke="#84B59F" strokeWidth="2.5" strokeLinecap="round"/>
+                                        <line x1="100" y1="120" x2="115" y2="132" stroke="#84B59F" strokeWidth="2.5" strokeLinecap="round"/>
+                                        <circle cx="127" cy="73" r="5" fill="#50808E"/>
+                                        <line x1="127" y1="66" x2="127" y2="80" stroke="#CADCFC" strokeWidth="2" strokeLinecap="round"/>
+                                        <line x1="120" y1="73" x2="134" y2="73" stroke="#CADCFC" strokeWidth="2" strokeLinecap="round"/>
+                                        <line x1="122" y1="68" x2="132" y2="78" stroke="#CADCFC" strokeWidth="1.5" strokeLinecap="round"/>
+                                        <line x1="132" y1="68" x2="122" y2="78" stroke="#CADCFC" strokeWidth="1.5" strokeLinecap="round"/>
+                                        <text x="210" y="118" fontFamily="Arial, Helvetica, sans-serif" fontSize="52" fontWeight="bold" textAnchor="start" fill="#2C7A5C">SmartEats</text>
+                                        <text x="475" y="118" fontFamily="Arial, Helvetica, sans-serif" fontSize="20" textAnchor="start" fill="#50808E" letterSpacing="3">IRELAND</text>
+                                    </svg>
+                                </div>
+                                <div className="hidden md:block">
+                                    <p className="text-sm text-gray-600 italic">Stop Wasting Food & Money</p>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Navigation */}
+                    <nav className="bg-white shadow-sm sticky top-0 z-10">
+                        <div className="max-w-7xl mx-auto px-4">
+                            <div className="flex space-x-8 overflow-x-auto scrollbar-hide">
+                                {[
+                                    { id: 'home', label: '🏠 Home' },
+                                    { id: 'ai-planner', label: '🤖 AI Meal Planner' },
+                                    { id: 'compare', label: '💰 Price Compare' },
+                                    { id: 'students', label: '🎓 For Students' },
+                                    { id: 'about', label: '🌍 About' }
+                                ].map(tab => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`py-4 px-2 border-b-2 font-medium text-sm whitespace-nowrap transition ${
+                                            activeTab === tab.id
+                                                ? 'border-emerald-600 text-emerald-700'
+                                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                        }`}
+                                    >
+                                        {tab.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </nav>
+
+                    {/* Main Content */}
+                    <main className="max-w-7xl mx-auto px-4 py-8">
+                        {/* HOME TAB */}
+                        {activeTab === 'home' && (
+                            <div className="space-y-8 slide-in">
+                                {/* Hero */}
+                                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-12 border border-emerald-200">
+                                    <h2 className="text-4xl font-bold text-gray-800 mb-4">Save €2,000/Year on Groceries</h2>
+                                    <p className="text-xl text-gray-600 mb-6">AI-powered meal planning + price comparison across all Irish supermarkets</p>
+                                    
+                                    <div className="grid md:grid-cols-3 gap-4 mb-6">
+                                        <div className="bg-white p-6 rounded-xl shadow-sm">
+                                            <div className="text-4xl mb-2">🤖</div>
+                                            <h3 className="font-bold text-lg mb-2">Smart Meal Planning</h3>
+                                            <p className="text-sm text-gray-600">AI suggests recipes based on what you have & your budget</p>
+                                        </div>
+                                        <div className="bg-white p-6 rounded-xl shadow-sm">
+                                            <div className="text-4xl mb-2">💰</div>
+                                            <h3 className="font-bold text-lg mb-2">Price Comparison</h3>
+                                            <p className="text-sm text-gray-600">See which store is cheapest for your shopping list</p>
+                                        </div>
+                                        <div className="bg-white p-6 rounded-xl shadow-sm">
+                                            <div className="text-4xl mb-2">♻️</div>
+                                            <h3 className="font-bold text-lg mb-2">Zero Waste</h3>
+                                            <p className="text-sm text-gray-600">Prevent food waste with portion-perfect recipes</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex gap-4">
+                                        <button onClick={() => setActiveTab('ai-planner')} className="bg-emerald-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition">
+                                            Try AI Meal Planner
+                                        </button>
+                                        <button onClick={() => setActiveTab('students')} className="bg-white text-emerald-600 px-8 py-3 rounded-lg font-semibold border-2 border-emerald-600 hover:bg-emerald-50 transition">
+                                            Student Deals
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Stats */}
+                                <div className="grid md:grid-cols-4 gap-4">
+                                    <div className="bg-white p-6 rounded-lg shadow text-center">
+                                        <div className="text-3xl font-bold text-emerald-600">€2,000</div>
+                                        <div className="text-sm text-gray-600">Avg. annual savings</div>
+                                    </div>
+                                    <div className="bg-white p-6 rounded-lg shadow text-center">
+                                        <div className="text-3xl font-bold text-teal-600">70%</div>
+                                        <div className="text-sm text-gray-600">Food waste reduced</div>
+                                    </div>
+                                    <div className="bg-white p-6 rounded-lg shadow text-center">
+                                        <div className="text-3xl font-bold text-emerald-600">5 Stores</div>
+                                        <div className="text-sm text-gray-600">Price comparison</div>
+                                    </div>
+                                    <div className="bg-white p-6 rounded-lg shadow text-center">
+                                        <div className="text-3xl font-bold text-teal-600">1000+</div>
+                                        <div className="text-sm text-gray-600">Irish families</div>
+                                    </div>
+                                </div>
+
+                                {/* How It Works */}
+                                <div className="bg-white rounded-lg shadow p-8">
+                                    <h3 className="text-2xl font-bold mb-6">How SmartEats Works</h3>
+                                    <div className="grid md:grid-cols-3 gap-6">
+                                        <div>
+                                            <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-2xl font-bold text-emerald-600 mb-3">1</div>
+                                            <h4 className="font-bold mb-2">Tell Us What You Want</h4>
+                                            <p className="text-sm text-gray-600">Chat with our AI: "I need dinner for 4 under €15" or "What can I make with chicken?"</p>
+                                        </div>
+                                        <div>
+                                            <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center text-2xl font-bold text-teal-600 mb-3">2</div>
+                                            <h4 className="font-bold mb-2">Get Smart Suggestions</h4>
+                                            <p className="text-sm text-gray-600">Receive recipes + exact shopping list with prices from every major Irish supermarket</p>
+                                        </div>
+                                        <div>
+                                            <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-2xl font-bold text-emerald-600 mb-3">3</div>
+                                            <h4 className="font-bold mb-2">Shop & Save</h4>
+                                            <p className="text-sm text-gray-600">See which store is cheapest for your list. Save €100s annually!</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Testimonial */}
+                                <div className="bg-gradient-to-r from-teal-50 to-emerald-50 rounded-lg p-8 border border-teal-200">
+                                    <div className="flex items-start gap-4">
+                                        <div className="text-5xl">💚</div>
+                                        <div>
+                                            <p className="text-lg italic text-gray-700 mb-3">"SmartEats saved our family over €150 last month! The AI meal planner is brilliant - it suggests recipes I'd never think of using ingredients I already have. No more wasted food!"</p>
+                                            <p className="font-semibold text-gray-800">- Sarah M., Dublin (Family of 4)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* AI PLANNER TAB */}
+                        {activeTab === 'ai-planner' && (
+                            <div className="slide-in">
+                                <div className="bg-white rounded-lg shadow-lg max-w-4xl mx-auto">
+                                    <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-4 rounded-t-lg">
+                                        <h3 className="text-xl font-bold">🤖 AI Meal Planner</h3>
+                                        <p className="text-sm text-emerald-100">Ask me anything - recipes, budgets, meal plans, dietary needs</p>
+                                    </div>
+                                    
+                                    <div className="h-96 overflow-y-auto p-4 space-y-4 bg-gray-50">
+                                        {chatMessages.map((msg, idx) => (
+                                            <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                                <div className={`chat-bubble p-3 rounded-lg ${
+                                                    msg.role === 'user' 
+                                                        ? 'bg-emerald-500 text-white' 
+                                                        : 'bg-white shadow border border-gray-200'
+                                                }`}>
+                                                    <div className="whitespace-pre-wrap text-sm">{msg.content}</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {isTyping && (
+                                            <div className="flex justify-start">
+                                                <div className="bg-white shadow border border-gray-200 p-3 rounded-lg">
+                                                    <div className="flex space-x-2">
+                                                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                                                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                                                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="border-t p-4 bg-white rounded-b-lg">
+                                        <div className="flex space-x-2">
+                                            <input
+                                                type="text"
+                                                value={userInput}
+                                                onChange={(e) => setUserInput(e.target.value)}
+                                                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                                placeholder="Try: 'Quick family dinner for €10' or 'What can I make with potatoes?'"
+                                                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                            />
+                                            <button
+                                                onClick={handleSendMessage}
+                                                className="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition font-medium"
+                                            >
+                                                Send
+                                            </button>
+                                        </div>
+                                        
+                                        <div className="mt-3 flex flex-wrap gap-2">
+                                            <button onClick={() => setUserInput("Family dinner for 4 people")} className="text-xs bg-gray-100 px-3 py-1 rounded-full hover:bg-gray-200">
+                                                👨‍👩‍👧 Family dinner ideas
+                                            </button>
+                                            <button onClick={() => setUserInput("Quick meals under 20 minutes")} className="text-xs bg-gray-100 px-3 py-1 rounded-full hover:bg-gray-200">
+                                                ⚡ Quick weeknight meals
+                                            </button>
+                                            <button onClick={() => setUserInput("Budget meals under €5")} className="text-xs bg-gray-100 px-3 py-1 rounded-full hover:bg-gray-200">
+                                                💰 Budget-friendly options
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* PRICE COMPARE TAB */}
+                        {activeTab === 'compare' && (
+                            <div className="slide-in max-w-4xl mx-auto">
+                                <div className="bg-white rounded-lg shadow-lg p-6">
+                                    <h3 className="text-2xl font-bold mb-4">💰 Price Comparison Tool</h3>
+                                    <p className="text-gray-600 mb-6">Enter your shopping list and find the cheapest supermarket</p>
+                                    
+                                    <textarea
+                                        value={shoppingList}
+                                        onChange={(e) => setShoppingList(e.target.value)}
+                                        placeholder="Enter items (one per line):&#10;Milk&#10;Bread&#10;Chicken breast&#10;Pasta&#10;Tomatoes"
+                                        className="w-full h-40 p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 mb-4"
+                                    />
+                                    
+                                    <button
+                                        onClick={compareShoppingList}
+                                        className="w-full bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition font-semibold"
+                                    >
+                                        Compare Prices Across All Stores
+                                    </button>
+
+                                    {priceResults && (
+                                        <div className="mt-6 space-y-3">
+                                            <h4 className="font-bold text-lg">Results:</h4>
+                                            
+                                            <div className="bg-emerald-50 border-2 border-emerald-500 rounded-lg p-4">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <div className="text-lg font-bold text-emerald-700">✅ Aldi - Best Price</div>
+                                                        <div className="text-sm text-gray-600">Total: €{priceResults.aldi.total.toFixed(2)}</div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <div className="text-2xl font-bold text-emerald-600">Save €{priceResults.aldi.savings.toFixed(2)}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-gray-50 border border-gray-300 rounded-lg p-4">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <div className="text-lg font-bold">Tesco</div>
+                                                        <div className="text-sm text-gray-600">Total: €{priceResults.tesco.total.toFixed(2)}</div>
+                                                    </div>
+                                                    <div className="text-gray-600">+€{priceResults.tesco.savings.toFixed(2)}</div>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-gray-50 border border-gray-300 rounded-lg p-4">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <div className="text-lg font-bold">Lidl</div>
+                                                        <div className="text-sm text-gray-600">Total: €{priceResults.lidl.total.toFixed(2)}</div>
+                                                    </div>
+                                                    <div className="text-gray-600">Most expensive</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* STUDENTS TAB */}
+                        {activeTab === 'students' && (
+                            <div className="slide-in space-y-6">
+                                <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-6">
+                                    <h3 className="text-2xl font-bold mb-2">🎓 SmartEats for Students</h3>
+                                    <p className="text-gray-600">Everything on SmartEats PLUS exclusive student features</p>
+                                </div>
+
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    {/* Student-Specific Features */}
+                                    <div className="bg-white rounded-lg shadow p-6">
+                                        <h4 className="text-xl font-bold mb-4 text-purple-700">🎒 Student Extras</h4>
+                                        <div className="space-y-3">
+                                            <div className="flex items-start gap-3">
+                                                <div className="text-2xl">💰</div>
+                                                <div>
+                                                    <div className="font-semibold">Ultra-Budget Recipes</div>
+                                                    <div className="text-sm text-gray-600">Survive on €30/week with our student meal plans</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-start gap-3">
+                                                <div className="text-2xl">🎉</div>
+                                                <div>
+                                                    <div className="font-semibold">Student Deals Hub</div>
+                                                    <div className="text-sm text-gray-600">Restaurant discounts, cafe offers, supermarket promos</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-start gap-3">
+                                                <div className="text-2xl">🎒</div>
+                                                <div>
+                                                    <div className="font-semibold">Food Pantry Access</div>
+                                                    <div className="text-sm text-gray-600">Connect to free food resources at your university</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-start gap-3">
+                                                <div className="text-2xl">♻️</div>
+                                                <div>
+                                                    <div className="font-semibold">Surplus Food Alerts</div>
+                                                    <div className="text-sm text-gray-600">Get notified of 50-70% off surplus food near campus</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Student Deals */}
+                                    <div className="bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-lg shadow-lg p-6">
+                                        <div className="text-sm font-semibold mb-2">⭐ FEATURED STUDENT DEAL</div>
+                                        <h4 className="text-2xl font-bold mb-2">Tesco Student Meal Deal</h4>
+                                        <p className="mb-4">Main + Snack + Drink for just €4.50</p>
+                                        <div className="bg-white/20 backdrop-blur rounded-lg p-3 mb-4">
+                                            <div className="text-sm">Show your student ID</div>
+                                            <div className="text-xs opacity-90">Valid at all Tesco stores</div>
+                                        </div>
+                                        <button className="bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">
+                                            View All Student Deals
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Student Stats */}
+                                <div className="bg-white rounded-lg shadow p-6">
+                                    <h4 className="text-xl font-bold mb-4">💪 How Students Save with SmartEats</h4>
+                                    <div className="grid md:grid-cols-3 gap-4">
+                                        <div className="text-center">
+                                            <div className="text-3xl font-bold text-purple-600">€442</div>
+                                            <div className="text-sm text-gray-600">Average annual savings</div>
+                                        </div>
+                                        <div className="text-center">
+                                            <div className="text-3xl font-bold text-pink-600">23kg</div>
+                                            <div className="text-sm text-gray-600">Food waste prevented yearly</div>
+                                        </div>
+                                        <div className="text-center">
+                                            <div className="text-3xl font-bold text-purple-600">€30</div>
+                                            <div className="text-sm text-gray-600">Weekly grocery budget</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* CTA */}
+                                <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-300 rounded-lg p-8 text-center">
+                                    <h4 className="text-2xl font-bold mb-3">🎓 Student? Get Free Premium!</h4>
+                                    <p className="text-gray-700 mb-4">Sign up with your .ie or .edu email to unlock all student features for free</p>
+                                    <button className="bg-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-purple-700 transition">
+                                        Sign Up Free - Students Only
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ABOUT TAB */}
+                        {activeTab === 'about' && (
+                            <div className="slide-in space-y-6 max-w-4xl mx-auto">
+                                <div className="bg-white rounded-lg shadow p-8">
+                                    <h3 className="text-3xl font-bold mb-4">About SmartEats Ireland</h3>
+                                    <p className="text-lg text-gray-700 mb-6">We're on a mission to eliminate food waste and help Irish families save money through smart technology.</p>
+                                    
+                                    <div className="grid md:grid-cols-2 gap-6 mb-8">
+                                        <div>
+                                            <h4 className="font-bold text-xl mb-3 text-emerald-700">🌍 Our Mission</h4>
+                                            <p className="text-gray-600">Create a zero-waste food economy in Ireland by 2030, starting with students and expanding to every household.</p>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-xl mb-3 text-teal-700">💡 Our Approach</h4>
+                                            <p className="text-gray-600">Combine AI technology with local partnerships to make sustainable eating accessible and affordable for everyone.</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-6 mb-6">
+                                        <h4 className="font-bold text-lg mb-3">🎯 UN Sustainable Development Goals</h4>
+                                        <div className="space-y-2 text-sm text-gray-700">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-2 h-2 bg-emerald-600 rounded-full"></div>
+                                                <span><strong>SDG 12.3:</strong> Halve per capita food waste by 2030</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-2 h-2 bg-emerald-600 rounded-full"></div>
+                                                <span><strong>SDG 2:</strong> Zero hunger - connecting people to food resources</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-2 h-2 bg-emerald-600 rounded-full"></div>
+                                                <span><strong>SDG 13:</strong> Climate action - reducing food waste emissions</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-gray-50 rounded-lg p-6">
+                                        <h4 className="font-bold text-lg mb-3">📊 Our Impact So Far</h4>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                            <div>
+                                                <div className="text-2xl font-bold text-emerald-600">1,247</div>
+                                                <div className="text-xs text-gray-600">Irish families</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-2xl font-bold text-teal-600">12.4 tonnes</div>
+                                                <div className="text-xs text-gray-600">Food waste prevented</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-2xl font-bold text-emerald-600">€156k</div>
+                                                <div className="text-xs text-gray-600">Saved collectively</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-2xl font-bold text-teal-600">31 tonnes</div>
+                                                <div className="text-xs text-gray-600">CO₂ avoided</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Contact CTA */}
+                                <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg shadow-lg p-8 text-center">
+                                    <h4 className="text-2xl font-bold mb-3">Join the Movement</h4>
+                                    <p className="mb-6">Help us eliminate food waste across Ireland</p>
+                                    <div className="flex gap-4 justify-center">
+                                        <button className="bg-white text-emerald-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
+                                            Sign Up Free
+                                        </button>
+                                        <button className="bg-emerald-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-emerald-400 transition">
+                                            Partner With Us
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </main>
+
+                    {/* Footer */}
+                    <footer className="bg-gray-800 text-white mt-16">
+                        <div className="max-w-7xl mx-auto px-4 py-8">
+                            <div className="grid md:grid-cols-4 gap-8">
+                                <div>
+                                    <svg width="180" height="42" viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg" className="mb-3">
+                                        <path d="M 100 40 Q 140 50, 150 85" stroke="#84B59F" strokeWidth="8" fill="none" strokeLinecap="round"/>
+                                        <polygon points="153,82 146,93 139,86" fill="#84B59F"/>
+                                        <path d="M 150 100 Q 145 140, 115 165" stroke="#84B59F" strokeWidth="8" fill="none" strokeLinecap="round"/>
+                                        <polygon points="118,168 108,165 111,157" fill="#84B59F"/>
+                                        <path d="M 95 165 Q 50 150, 50 100" stroke="#84B59F" strokeWidth="8" fill="none" strokeLinecap="round"/>
+                                        <polygon points="47,97 52,92 57,100" fill="#84B59F"/>
+                                        <path d="M 50 85 Q 55 50, 85 40" stroke="#84B59F" strokeWidth="6" fill="none" strokeDasharray="4,8" opacity="0.6"/>
+                                        <path d="M 100 60 Q 135 75, 135 110 Q 135 140, 110 157 L 100 165 L 90 157 Q 65 140, 65 110 Q 65 75, 100 60 Z" fill="#84B59F"/>
+                                        <line x1="100" y1="62" x2="100" y2="163" stroke="#2C7A5C" strokeWidth="3" strokeLinecap="round"/>
+                                        <line x1="100" y1="85" x2="80" y2="100" stroke="#2C7A5C" strokeWidth="2.5" strokeLinecap="round"/>
+                                        <line x1="100" y1="85" x2="120" y2="100" stroke="#2C7A5C" strokeWidth="2.5" strokeLinecap="round"/>
+                                        <line x1="100" y1="120" x2="85" y2="132" stroke="#2C7A5C" strokeWidth="2.5" strokeLinecap="round"/>
+                                        <line x1="100" y1="120" x2="115" y2="132" stroke="#2C7A5C" strokeWidth="2.5" strokeLinecap="round"/>
+                                        <circle cx="127" cy="73" r="5" fill="#CADCFC"/>
+                                        <text x="210" y="118" fontFamily="Arial, Helvetica, sans-serif" fontSize="52" fontWeight="bold" textAnchor="start" fill="#84B59F">SmartEats</text>
+                                        <text x="475" y="118" fontFamily="Arial, Helvetica, sans-serif" fontSize="20" textAnchor="start" fill="#CADCFC" letterSpacing="3">IRELAND</text>
+                                    </svg>
+                                    <p className="text-gray-400 text-sm">Stop wasting food and money through AI-powered meal planning.</p>
+                                </div>
+                                <div>
+                                    <h4 className="font-bold mb-3">Features</h4>
+                                    <div className="space-y-2 text-sm text-gray-400">
+                                        <div>AI Meal Planner</div>
+                                        <div>Price Comparison</div>
+                                        <div>Recipe Database</div>
+                                        <div>Student Hub</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 className="font-bold mb-3">Company</h4>
+                                    <div className="space-y-2 text-sm text-gray-400">
+                                        <div>About Us</div>
+                                        <div>Our Impact</div>
+                                        <div>Partner With Us</div>
+                                        <div>Contact</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 className="font-bold mb-3">Legal</h4>
+                                    <div className="space-y-2 text-sm text-gray-400">
+                                        <div>Privacy Policy</div>
+                                        <div>Terms of Service</div>
+                                        <div>Cookie Policy</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400 text-sm">
+                                © 2026 SmartEats Ireland • Reducing food waste across Ireland • SDG-aligned sustainability platform
+                            </div>
+                        </div>
+                    </footer>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</body>
+</html>
